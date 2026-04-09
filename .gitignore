@@ -8,4 +8,11 @@ data/manifest.json
 data/docs_selected.jsonl
 .mypy_cache/
 .venv
+.venv/
+venv/
+env/
 logs/
+*.pyc
+*.pyo
+.vscode/
+.idea/
