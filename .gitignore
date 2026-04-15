@@ -1,18 +1,55 @@
-data/tokenizers
-__pycache__/
-.DS_Store
-modded-nanogpt/
-modded-nanogpt
-data/datasets
-data/manifest.json
-data/docs_selected.jsonl
-.mypy_cache/
-.venv
+# Keep the repo focused on files needed to run on a GPU server:
+# training scripts, requirements, README/docs, and data download/tokenizer specs.
+
+# Python environments and caches
 .venv/
+.wsl_venv/
 venv/
 env/
-logs/
-*.pyc
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.py[cod]
 *.pyo
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
+
+# Downloaded/generated data
+data/datasets/
+data/tokenizers/
+data/manifest.json
+data/docs_selected.jsonl
+
+# Training/evaluation outputs
+logs/
+runs/
+wandb/
+tensorboard/
+checkpoints/
+outputs/
+artifacts/
+*.log
+*.pt
+*.pth
+*.ptz
+*.ckpt
+*.safetensors
+*.npz
+*.npy
+*.bin
+
+# Local-only helper scripts
+local_*.ps1
+run_*_local.ps1
+run_local.bat
+setup_wsl.sh
+test_fp32.py
+get-pip.py
+
+# External scratch repos
+modded-nanogpt/
