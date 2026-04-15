@@ -69,6 +69,11 @@ class Hyperparameters:
     tie_embeddings = bool(int(os.environ.get("TIE_EMBEDDINGS", "1")))
     rope_base = float(os.environ.get("ROPE_BASE", 10000.0))
     logit_softcap = float(os.environ.get("LOGIT_SOFTCAP", 30.0))
+    torch_compile = bool(int(os.environ.get("TORCH_COMPILE", "0" if os.name == "nt" else "1")))
+    enable_cudnn_sdp = bool(int(os.environ.get("ENABLE_CUDNN_SDP", "0")))
+    enable_flash_sdp = bool(int(os.environ.get("ENABLE_FLASH_SDP", "1")))
+    enable_mem_efficient_sdp = bool(int(os.environ.get("ENABLE_MEM_EFFICIENT_SDP", "1" if os.name == "nt" else "0")))
+    enable_math_sdp = bool(int(os.environ.get("ENABLE_MATH_SDP", "1" if os.name == "nt" else "0")))
 
     # Optimizer hyperparameters.
     embed_lr = float(os.environ.get("EMBED_LR", 0.6))
@@ -733,7 +738,8 @@ def main() -> None:
 
     code = Path(__file__).read_text(encoding="utf-8")
     args = Hyperparameters()
-    zeropower_via_newtonschulz5 = torch.compile(zeropower_via_newtonschulz5)
+    if args.torch_compile:
+        zeropower_via_newtonschulz5 = torch.compile(zeropower_via_newtonschulz5)
 
     # -----------------------------
     # DISTRIBUTED + CUDA SETUP
@@ -763,10 +769,10 @@ def main() -> None:
     torch.backends.cudnn.allow_tf32 = True
     from torch.backends.cuda import enable_cudnn_sdp, enable_flash_sdp, enable_math_sdp, enable_mem_efficient_sdp
 
-    enable_cudnn_sdp(False)
-    enable_flash_sdp(True)
-    enable_mem_efficient_sdp(False)
-    enable_math_sdp(False)
+    enable_cudnn_sdp(args.enable_cudnn_sdp)
+    enable_flash_sdp(args.enable_flash_sdp)
+    enable_mem_efficient_sdp(args.enable_mem_efficient_sdp)
+    enable_math_sdp(args.enable_math_sdp)
 
     logfile = None
     if master_process:
@@ -840,7 +846,7 @@ def main() -> None:
         if isinstance(module, CastedLinear):
             module.float()
     restore_low_dim_params_to_fp32(base_model)
-    compiled_model = torch.compile(base_model, dynamic=False, fullgraph=True)
+    compiled_model = torch.compile(base_model, dynamic=False, fullgraph=True) if args.torch_compile else base_model
     model: nn.Module = DDP(compiled_model, device_ids=[local_rank], broadcast_buffers=False) if distributed else compiled_model
 
     # Optimizer split:
@@ -895,7 +901,14 @@ def main() -> None:
     n_params = sum(p.numel() for p in base_model.parameters())
     log0(f"model_params:{n_params}")
     log0(f"world_size:{world_size} grad_accum_steps:{grad_accum_steps}")
-    log0("sdp_backends:cudnn=False flash=True mem_efficient=False math=False")
+    log0(f"torch_compile:{args.torch_compile}")
+    log0(
+        "sdp_backends:"
+        f"cudnn={args.enable_cudnn_sdp} "
+        f"flash={args.enable_flash_sdp} "
+        f"mem_efficient={args.enable_mem_efficient_sdp} "
+        f"math={args.enable_math_sdp}"
+    )
     log0(f"attention_mode:gqa num_heads:{args.num_heads} num_kv_heads:{args.num_kv_heads}")
     log0(
         f"tie_embeddings:{args.tie_embeddings} embed_lr:{token_lr} "
