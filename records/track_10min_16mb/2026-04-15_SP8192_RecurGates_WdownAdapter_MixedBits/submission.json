@@ -1,0 +1,31 @@
+{
+  "author": null,
+  "github_id": null,
+  "name": "SP8192 + 3-Layer Recurrence + Parallel Residuals + Recurrent Gates + W_down Adapter + Mixed Bits",
+  "date": "2026-04-15",
+  "track": "10min_16mb",
+  "val_bpb": null,
+  "val_bpb_std": null,
+  "seeds": [42, 314, 999],
+  "seed_results": {},
+  "hardware": "8xH100 80GB SXM",
+  "technique_summary": "SP8192 + 3-layer recurrence + parallel residuals + QK-Gain sweep + legal score-first TTT + depth-conditioned recurrent residual gates + W_down-only random-basis adapter + Hessian-aware mixed-bit GPTQ",
+  "compliance": {
+    "train_under_600s": null,
+    "artifact_under_16mb": null,
+    "eval_under_600s": null,
+    "no_slot": true,
+    "no_pre_quant_ttt": true,
+    "no_etlb": true,
+    "no_ngram_cache": true,
+    "score_first_ttt": true,
+    "three_seeds": null
+  },
+  "attribution": {
+    "base_sota_stack": "2026-04-09_SP8192_3LayerRecur_ParResid_QK525_LegalTTT",
+    "sp8192_gptq_sdclip": "@clarkkev (PR #1394 lineage)",
+    "depth_recurrence": "@dexhunter lineage",
+    "parallel_residuals": "@Robby955, @msisovic lineage",
+    "legal_ttt_framework": "@abaybektursun, @dexhunter lineage"
+  }
+}
